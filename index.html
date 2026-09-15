@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AV-Shield Live Analytics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A0F1A;
+    --panel: #10192B;
+    --panel-border: #1E2A42;
+    --text-primary: #E7ECF6;
+    --text-muted: #8593AD;
+    --accent-cyan: #4FD8C4;
+    --accent-amber: #F2B84B;
+    --accent-red: #F2665B;
+  }
+  html, body { background: var(--bg); font-family: 'IBM Plex Mono', monospace; }
+  .font-display { font-family: 'Space Grotesk', sans-serif; }
+  .panel { background: var(--panel); border: 1px solid var(--panel-border); }
+  .glow-dot { box-shadow: 0 0 8px 2px rgba(79,216,196,0.55); }
+  .glow-dot-amber { box-shadow: 0 0 8px 2px rgba(242,184,75,0.55); }
+  @keyframes pulse-ring {
+    0% { transform: scale(0.9); opacity: 0.6; }
+    70% { transform: scale(1.6); opacity: 0; }
+    100% { transform: scale(1.6); opacity: 0; }
+  }
+  .pulse-ring::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: var(--accent-cyan);
+    animation: pulse-ring 2.2s cubic-bezier(0.4,0,0.6,1) infinite;
+  }
+  @keyframes row-in {
+    from { opacity: 0; transform: translateY(-6px); background-color: rgba(79,216,196,0.08); }
+    to { opacity: 1; transform: translateY(0); background-color: transparent; }
+  }
+  .row-in { animation: row-in 0.6s ease-out; }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--panel); }
+  ::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 4px; }
+  .reduced-motion { animation: none !important; }
+</style>
+</head>
+<body class="min-h-screen text-[var(--text-primary)]">
+
+<div class="max-w-6xl mx-auto px-6 py-8">
+
+  <!-- Header -->
+  <header class="flex items-center justify-between border-b border-[var(--panel-border)] pb-6 mb-8">
+    <div class="flex items-center gap-4">
+      <div class="relative w-3 h-3">
+        <span class="pulse-ring"></span>
+        <span class="relative block w-3 h-3 rounded-full bg-[var(--accent-cyan)]"></span>
+      </div>
+      <div>
+        <h1 class="font-display text-2xl md:text-3xl font-700 tracking-tight text-[var(--text-primary)]">AV-Shield Live Analytics</h1>
+        <p class="text-xs md:text-sm text-[var(--text-muted)] mt-1 tracking-wide">FLEET SENSOR-INTEGRITY OPERATIONS CONSOLE</p>
+      </div>
+    </div>
+    <div class="hidden sm:flex flex-col items-end text-xs text-[var(--text-muted)]">
+      <span id="clock" class="font-display text-sm text-[var(--text-primary)] tracking-widest"></span>
+      <span>UTC OPERATIONS FEED</span>
+    </div>
+  </header>
+
+  <!-- Status Grid -->
+  <section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+
+    <div class="panel rounded-lg p-5 relative overflow-hidden">
+      <p class="text-xs text-[var(--text-muted)] tracking-widest mb-2">ACTIVE FLEET SIZE</p>
+      <p class="font-display text-4xl font-700 text-[var(--text-primary)]">450</p>
+      <p class="text-xs text-[var(--accent-cyan)] mt-2">● all units reporting</p>
+    </div>
+
+    <div class="panel rounded-lg p-5 relative overflow-hidden">
+      <p class="text-xs text-[var(--text-muted)] tracking-widest mb-2">SENSORS CLEANED TODAY</p>
+      <p class="font-display text-4xl font-700 text-[var(--text-primary)]" id="sensors-cleaned">1,234</p>
+      <p class="text-xs text-[var(--accent-amber)] mt-2">▲ climbing in real time</p>
+    </div>
+
+    <div class="panel rounded-lg p-5 relative overflow-hidden">
+      <p class="text-xs text-[var(--text-muted)] tracking-widest mb-2">SYSTEM UPTIME</p>
+      <p class="font-display text-4xl font-700 text-[var(--text-primary)]">99.98%</p>
+      <p class="text-xs text-[var(--text-muted)] mt-2">rolling 30-day window</p>
+    </div>
+
+  </section>
+
+  <!-- Live Event Log -->
+  <section class="panel rounded-lg overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-[var(--panel-border)]">
+      <div class="flex items-center gap-3">
+        <span class="relative flex h-2.5 w-2.5">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent-cyan)] opacity-60"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--accent-cyan)]"></span>
+        </span>
+        <h2 class="font-display text-sm font-600 tracking-wide">LIVE EVENT LOG</h2>
+      </div>
+      <span class="text-xs text-[var(--text-muted)]" id="event-count">0 events</span>
+    </div>
+
+    <div class="max-h-[420px] overflow-y-auto">
+      <table class="w-full text-xs sm:text-sm">
+        <thead class="sticky top-0 bg-[var(--panel)] text-[var(--text-muted)] text-left">
+          <tr class="border-b border-[var(--panel-border)]">
+            <th class="py-2 px-5 font-500 tracking-wider w-28">TIME</th>
+            <th class="py-2 px-3 font-500 tracking-wider w-16">STATUS</th>
+            <th class="py-2 px-3 font-500 tracking-wider">EVENT</th>
+          </tr>
+        </thead>
+        <tbody id="log-body" class="divide-y divide-[var(--panel-border)]">
+          <!-- rows injected here -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="text-center text-xs text-[var(--text-muted)] mt-8">
+    Simulated telemetry — for prototype / demonstration purposes only.
+  </footer>
+
+</div>
+
+<script>
+  // ---- Clock ----
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toUTCString().split(' ')[4] + ' UTC';
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ---- Event simulation data ----
+  const vehicleCount = 450;
+  const events = [
+    { text: 'Rain drops detected -> Activating hydrophobic pulse', status: 'ok' },
+    { text: 'Dust cleared from Left Camera', status: 'ok' },
+    { text: 'Dust cleared from Right Camera', status: 'ok' },
+    { text: 'Mud accumulation on Rear LIDAR -> Deploying wiper cycle', status: 'warn' },
+    { text: 'Frost detected on Front Radar -> Engaging heating element', status: 'warn' },
+    { text: 'Sensor cleaning cycle completed successfully', status: 'ok' },
+    { text: 'Debris impact on Top LIDAR -> Running diagnostic sweep', status: 'error' },
+    { text: 'Windshield-mounted camera fogged -> Activating defog routine', status: 'warn' },
+    { text: 'Ultrasonic sensor array recalibrated', status: 'ok' },
+    { text: 'Low washer fluid on unit -> Scheduling depot refill', status: 'error' },
+    { text: 'Bird droppings detected on Front Camera -> Fluid + wipe cycle', status: 'warn' },
+    { text: 'Salt residue cleared from Side Sensor Pod', status: 'ok' },
+    { text: 'Pollen film detected -> Activating lens rinse', status: 'warn' },
+    { text: 'Nightly self-test passed on all sensor clusters', status: 'ok' }
+  ];
+
+  const statusStyles = {
+    ok:    { label: 'OK',    color: 'text-[var(--accent-cyan)]',  dot: 'bg-[var(--accent-cyan)]' },
+    warn:  { label: 'WARN',  color: 'text-[var(--accent-amber)]', dot: 'bg-[var(--accent-amber)]' },
+    error: { label: 'ALERT', color: 'text-[var(--accent-red)]',   dot: 'bg-[var(--accent-red)]' }
+  };
+
+  const logBody = document.getElementById('log-body');
+  const eventCountEl = document.getElementById('event-count');
+  const sensorsCleanedEl = document.getElementById('sensors-cleaned');
+  let eventCount = 0;
+  let sensorsCleaned = 1234;
+  const MAX_ROWS = 60;
+
+  function timeStamp() {
+    const now = new Date();
+    return now.toTimeString().split(' ')[0];
+  }
+
+  function randomVehicleId() {
+    return Math.floor(Math.random() * vehicleCount) + 1;
+  }
+
+  function addEventRow() {
+    const evt = events[Math.floor(Math.random() * events.length)];
+    const vehicleId = randomVehicleId();
+    const style = statusStyles[evt.status];
+
+    const row = document.createElement('tr');
+    row.className = 'row-in';
+    row.innerHTML = `
+      <td class="py-2 px-5 text-[var(--text-muted)] whitespace-nowrap">${timeStamp()}</td>
+      <td class="py-2 px-3">
+        <span class="inline-flex items-center gap-1.5 ${style.color} font-500">
+          <span class="w-1.5 h-1.5 rounded-full ${style.dot}"></span>${style.label}
+        </span>
+      </td>
+      <td class="py-2 px-3 text-[var(--text-primary)]">
+        <span class="text-[var(--text-muted)]">Vehicle #${vehicleId}:</span> ${evt.text}
+      </td>
+    `;
+
+    logBody.prepend(row);
+    eventCount++;
+    eventCountEl.textContent = `${eventCount} event${eventCount === 1 ? '' : 's'}`;
+
+    // Trim old rows so the DOM doesn't grow unbounded
+    while (logBody.children.length > MAX_ROWS) {
+      logBody.removeChild(logBody.lastChild);
+    }
+
+    // Nudge the "sensors cleaned" counter for cleaning-related events
+    if (evt.text.toLowerCase().includes('clean') || evt.text.toLowerCase().includes('wipe') || evt.text.toLowerCase().includes('pulse') || evt.text.toLowerCase().includes('rinse')) {
+      sensorsCleaned += Math.floor(Math.random() * 3) + 1;
+      sensorsCleanedEl.textContent = sensorsCleaned.toLocaleString();
+    }
+  }
+
+  // Seed the log with a few rows immediately so it isn't empty on load
+  for (let i = 0; i < 5; i++) addEventRow();
+
+  // Append a new simulated event every 3 seconds
+  setInterval(addEventRow, 3000);
+</script>
+
+</body>
+</html>

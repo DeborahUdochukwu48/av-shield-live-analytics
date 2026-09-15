@@ -1,8 +1,10 @@
 # AV-Shield Live Analytics
 
+**[Open the live dashboard](https://deborahudochukwu48.github.io/av-shield-live-analytics/)**
+
 A frontend prototype of a fleet operations console for autonomous-vehicle sensor-integrity work. It is a single static page that simulates live telemetry so you can review layout, status language, and event-log behavior without a backend.
 
-Open `prototype.html` in a browser. There is no build step.
+There is no build step. Use the link above, or open `index.html` in a browser.
 
 ## What it shows
 
@@ -16,10 +18,10 @@ The numbers and log lines are generated in the browser. They are not connected t
 ## How to run
 
 ```bash
-open prototype.html
+open index.html
 ```
 
-Or drag `prototype.html` into Chrome, Safari, or Firefox. The page loads Tailwind CSS and fonts from public CDNs, so you need a network connection the first time.
+Or drag `index.html` into Chrome, Safari, or Firefox. The page loads Tailwind CSS and fonts from public CDNs, so you need a network connection the first time.
 
 ## Stack
 
